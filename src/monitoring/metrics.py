@@ -39,16 +39,26 @@ chat_cost_usd_total = Counter(
     ["config_id", "model"],
 )
 
-# TODO (Task 4): define `chat_request_duration_seconds`.
-# Histogram, labels = ("config_id",), buckets covering ~100ms to ~30s.
-# Used by the request-latency p50/p95/p99 Grafana panel via histogram_quantile.
-# Observe once per request, in the /chat handler's `finally:` block.
+chat_request_duration_seconds = Histogram(
+    "chat_request_duration_seconds",
+    "End-to-end /chat latency distribution.",
+    ["config_id"],
+    buckets=(0.1, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0),
+)
 
-# TODO (Task 4): define `chat_input_tokens` and `chat_output_tokens`.
-# Histograms, labels = ("config_id", "model").
-# Observe per ModelCall in /chat. Useful for token-size analysis and cost
-# attribution; not used directly by any required panel but informative for
-# inspection in Prometheus.
+chat_input_tokens = Histogram(
+    "chat_input_tokens",
+    "Per-call prompt token-size distribution.",
+    ["config_id", "model"],
+    buckets=(16, 64, 256, 1024, 4096, 16384),
+)
+
+chat_output_tokens = Histogram(
+    "chat_output_tokens",
+    "Per-call response token-size distribution.",
+    ["config_id", "model"],
+    buckets=(8, 32, 128, 512, 2048),
+)
 
 # --- State signals (gauges) --------------------------------------------------
 
@@ -82,12 +92,15 @@ assistant_info = Gauge(
 
 # --- Sampled signals (async worker emits) ------------------------------------
 
-# TODO (Task 4): define `judge_evaluations_total`.
-# Counter, labels = ("config_id", "verdict"). `verdict` values include
-# "answered_correctly", "refused_correctly", "leaked", "over_refused",
-# "judge_error". Used by the DIVERGENCE panel (leakage rate from judge) and
-# the Judge-verdicts panel. Increment in src/monitoring/judge_worker.py.
+judge_evaluations_total = Counter(
+    "judge_evaluations_total",
+    "Count of completed judge evaluations by verdict.",
+    ["config_id", "verdict"],
+)
 
-# TODO (Task 4): define `judge_latency_seconds`.
-# Histogram, labels = ("config_id",), buckets covering ~0.5s to ~30s.
-# Observe once per judge call in src/monitoring/judge_worker.py.
+judge_latency_seconds = Histogram(
+    "judge_latency_seconds",
+    "Time for one judge call to complete.",
+    ["config_id"],
+    buckets=(0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0),
+)

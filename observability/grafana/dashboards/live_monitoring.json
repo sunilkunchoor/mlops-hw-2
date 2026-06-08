@@ -31,7 +31,18 @@
       "type": "timeseries",
       "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1}, "overrides": []},
       "options": {"legend": {"showLegend": true, "placement": "bottom", "displayMode": "list"}, "tooltip": {"mode": "multi"}},
-      "targets": []
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(chat_requests_total{refused=\"true\"}[5m])) / sum(rate(chat_requests_total[5m]))",
+          "legendFormat": "cheap refusal-rate"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(rate(judge_evaluations_total{verdict=\"leaked\"}[1h])) / sum(rate(judge_evaluations_total[1h]))",
+          "legendFormat": "judge leakage-rate"
+        }
+      ]
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
@@ -58,7 +69,23 @@
       "type": "timeseries",
       "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
       "options": {"legend": {"showLegend": true, "placement": "bottom", "displayMode": "list"}, "tooltip": {"mode": "multi"}},
-      "targets": []
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.5, sum by (le, config_id) (rate(chat_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "p50 {{config_id}}"
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le, config_id) (rate(chat_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "p95 {{config_id}}"
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum by (le, config_id) (rate(chat_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "p99 {{config_id}}"
+        }
+      ]
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
@@ -132,7 +159,13 @@
       "type": "timeseries",
       "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
       "options": {"legend": {"showLegend": true, "placement": "bottom", "displayMode": "list"}, "tooltip": {"mode": "multi"}},
-      "targets": []
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (verdict) (rate(judge_evaluations_total[1h]))",
+          "legendFormat": "{{verdict}}"
+        }
+      ]
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
